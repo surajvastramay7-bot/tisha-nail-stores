@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Tisha Admin Panel</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;color:#171b22;background:#f7f3f5}.side{position:fixed;left:0;top:0;bottom:0;width:230px;background:#15191f;color:#fff;padding:25px 18px}.brand{font-family:cursive;font-size:25px;color:#ff77a5;margin-bottom:35px}.nav a{display:block;padding:13px 14px;color:#ddd;text-decoration:none;border-radius:10px;margin:5px 0}.nav a.active,.nav a:hover{background:#e72f72;color:#fff}.main{margin-left:230px;padding:35px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.btn{background:#e72f72;color:white;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.stat,.panel{background:#fff;border-radius:16px;padding:20px;box-shadow:0 5px 18px #0000000b}.stat b{font-size:28px;display:block;margin-top:8px}.panel{margin-top:20px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.item{border:1px solid #eee;border-radius:14px;overflow:hidden}.pic{height:160px;background:linear-gradient(135deg,#f4b5ca,#fbe9ef);display:grid;place-items:center;color:#98506c}.itembody{padding:12px}.actions{display:flex;gap:7px;margin-top:10px}.small{padding:8px 11px;font-size:12px}.danger{background:#222}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.box{background:#fff;padding:25px;border-radius:18px;width:min(520px,100%)}label{font-size:13px;font-weight:700;display:block;margin:12px 0 5px}input{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px} .close{float:right;border:0;background:none;font-size:24px}@media(max-width:800px){.side{width:70px}.brand{font-size:0}.brand:first-letter{font-size:28px}.nav a{font-size:0;text-align:center}.nav a:before{content:"•";font-size:22px}.main{margin-left:70px}.cards{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.main{padding:20px}.grid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<aside class="side"><div class="brand">Tisha ♡</div><div class="nav"><a class="active" href="#">Dashboard</a><a href="#designs">Manage Designs</a><a href="#appointments">Appointments</a><a href="index.html">View Website</a></div></aside>
+<main class="main">
+<div class="top"><div><h1>Dashboard</h1><p>Manage your nail designs and appointments.</p></div><button class="btn" onclick="openAdd()">+ Add New Design</button></div>
+<div class="cards"><div class="stat">Total Designs<b id="count">0</b></div><div class="stat">Appointments<b id="apps">0</b></div><div class="stat">Website<b>Live</b></div></div>
+<section class="panel" id="designs"><h2>Manage Designs</h2><div class="grid" id="grid"></div></section>
+<section class="panel" id="appointments"><h2>Appointments</h2><div id="appointmentList"></div></section>
+</main>
+<div class="modal" id="modal"><div class="box"><button class="close" onclick="closeAdd()">×</button><h2 id="modalTitle">Add Design</h2><form id="form"><input type="hidden" id="eid"><label>Design Name</label><input id="name" required><label>Price (₹)</label><input id="price" type="number" required><label>Photo</label><input id="photo" type="file" accept="image/*"><p style="font-size:12px;color:#777">Upload your own nail photo. It is stored in this browser.</p><button class="btn">Save Design</button></form></div></div>
+<script>
+const defaults=[{id:1,name:"Floral Bliss",price:1200},{id:2,name:"French Classic",price:1000},{id:3,name:"Glitter Glam",price:1300},{id:4,name:"Minimal Vibes",price:1100},{id:5,name:"Red Passion",price:1250},{id:6,name:"Pastel Dreams",price:1350},{id:7,name:"Chrome Shine",price:1400},{id:8,name:"Cute Hearts",price:1200}];
+function get(){return JSON.parse(localStorage.getItem("tisha_designs")||"null")||defaults}
+function save(x){localStorage.setItem("tisha_designs",JSON.stringify(x))}
+function render(){
+ let d=get();count.textContent=d.length;apps.textContent=JSON.parse(localStorage.getItem("tisha_bookings")||"[]").length;
+ grid.innerHTML=d.map(x=>`<div class="item"><div class="pic" ${x.photo?`style="background:url('${x.photo}') center/cover"`:""}>${x.photo?"":"Your photo"}</div><div class="itembody"><b>${esc(x.name)}</b><div>₹${Number(x.price).toLocaleString('en-IN')}</div><div class="actions"><button class="btn small" onclick="edit(${x.id})">Edit</button><button class="btn small danger" onclick="del(${x.id})">Delete</button></div></div></div>`).join("");
+ let a=JSON.parse(localStorage.getItem("tisha_bookings")||"[]");
+ appointmentList.innerHTML=a.length?a.map((x,i)=>`<div style="padding:12px 0;border-bottom:1px solid #eee"><b>${esc(x.name)}</b> — ${esc(x.phone)}<br>${esc(x.date)} ${esc(x.time)} · Design #${esc(x.design)}${x.message?"<br>"+esc(x.message):""}</div>`).join(""):"No appointments yet.";
+}
+function openAdd(){eid.value="";name.value="";price.value="";photo.value="";modal.classList.add("show")}
+function closeAdd(){modal.classList.remove("show")}
+function edit(id){let x=get().find(a=>a.id==id);eid.value=x.id;name.value=x.name;price.value=x.price;photo.value="";modal.classList.add("show")}
+function del(id){if(!confirm("Delete this design?"))return;save(get().filter(x=>x.id!=id));render()}
+form.addEventListener("submit",e=>{e.preventDefault();let d=get(),id=eid.value?Number(eid.value):Date.now(),old=d.find(x=>x.id==id);let finish=p=>{let x={id,name:name.value,price:Number(price.value),photo:p||(old&&old.photo)||""};let i=d.findIndex(a=>a.id==id);if(i>=0)d[i]=x;else d.unshift(x);save(d);render();closeAdd()};if(photo.files[0]){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(photo.files[0])}else finish("")});
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}render();
+</script>
+<section style="max-width:1000px;margin:30px auto;padding:24px;background:#fff;border-radius:18px;">
+<h2>Appointment Bookings</h2>
+<div id="bookingList"></div>
+</section>
+<script>
+(function(){
+ const box=document.getElementById('bookingList');
+ if(!box)return;
+ const data=JSON.parse(localStorage.getItem('tishaBookings')||'[]');
+ box.innerHTML=data.length?data.map(b=>'<div style="padding:14px;border-bottom:1px solid #eee"><b>'+b.name+'</b> — '+b.phone+'<br>Design: '+b.design+'<br>Date: '+b.date+' &nbsp; Time: '+b.time+'<br>'+(b.notes||'')+'</div>').join(''):'<p>No bookings yet.</p>';
+})();
+</script>
+</body></html>

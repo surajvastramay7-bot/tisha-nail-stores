@@ -1,0 +1,15 @@
+BOOKING FEATURE ADDED
+
+Customer website now includes:
+- Full name
+- Phone number
+- Design selection
+- Appointment date
+- Preferred time
+- Optional notes
+- Booking confirmation message
+
+Bookings are stored in browser localStorage and displayed in the admin page.
+
+For real online bookings from any device, connect this form to an online database/backend
+when the website is deployed.
